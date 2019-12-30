@@ -1,10 +1,7 @@
 import * as mongoose from 'mongoose';
 import { Cursed } from './sadako';
 
-const cursedSchema = new mongoose.Schema({ memberID: String, end: Date, dead: Boolean }, { collection: 'cursed' });
-
-export type ObjectId = mongoose.Types.ObjectId;
-export const createObjectId = () => mongoose.Types.ObjectId();
+const cursedSchema = new mongoose.Schema({ memberID: String, end: Date }, { collection: 'cursed' });
 
 export interface CursedDocument extends Cursed, mongoose.Document {
 }
