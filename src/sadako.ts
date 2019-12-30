@@ -174,7 +174,6 @@ class Prey {
 	private interval: NodeJS.Timeout;
 
 	constructor(public cursed: CursedDocument) {
-		this.ended();
 		this.interval = setInterval(() => this.ended(), 60000);
 	}
 
