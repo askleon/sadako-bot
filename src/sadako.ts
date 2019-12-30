@@ -18,7 +18,6 @@ const curse = new Curse<Prey>();
 
 enum SadakoMessages {
 	curse = "<https://youtu.be/Gw492Uz-EVg>",
-	pact = "Seven days",
 	eliminate = "<https://youtu.be/c80-nyjP9Hg>",
 	atone = "<https://youtu.be/5OlSgtKB37s>"
 }
