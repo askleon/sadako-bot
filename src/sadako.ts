@@ -94,6 +94,7 @@ export class Sadako {
 
 	private async ready() {
 		this._client.on("ready", () => console.log("Did it just get cold in here?"));
+		this._preys.forEach(v => v.ended());
 	}
 
 	private async userJoinedServer() {
@@ -227,7 +228,7 @@ class Prey {
 		this.interval = setInterval(() => this.ended(), 60000);
 	}
 
-	private async ended() {
+	public async ended() {
 		if (this.cursed.end <= new Date()) {
 			clearInterval(this.interval);
 			curse.emit("ended", this);
