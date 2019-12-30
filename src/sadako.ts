@@ -207,13 +207,11 @@ export class Sadako {
 	private async addCursed(id: string) {
 		const result = await this._db.addCursed({memberID: id, end: this.createEndDate()});
 		this._preys.push(new Prey(result));
-		console.log(result);
 	}
 
 	private async deleteCursed(prey: Prey) {
 		this._preys = this._preys.filter(p => p.cursed.memberID !== prey.cursed.memberID);
 		const result = await this._db.deleteCursed(prey.cursed);
-		console.log(result);
 	}
 }
 
