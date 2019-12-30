@@ -10,7 +10,7 @@ export class Database {
 	private _collection = mongoose.model<CursedDocument>('cursed', cursedSchema);
 
 	constructor(uri: string, dbName: string) {
-		mongoose.connect(uri, { dbName }, err => {
+		mongoose.connect(uri, { dbName, useNewUrlParser: true, useUnifiedTopology: true }, err => {
 			if (err) {
 				throw err;
 			} else {
