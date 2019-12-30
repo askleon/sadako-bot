@@ -93,8 +93,10 @@ export class Sadako {
 	}
 
 	private async ready() {
-		this._client.on("ready", () => console.log("Did it just get cold in here?"));
-		this._preys.forEach(v => v.ended());
+		this._client.on("ready", () => {
+			console.log("Did it just get cold in here?");
+			this._preys.forEach(v => v.ended());
+		});
 	}
 
 	private async userJoinedServer() {
