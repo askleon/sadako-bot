@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		"target": "es5",
+		"module": "commonjs",
+		"outDir": "out",
+		"rootDir": "src",
+		"sourceMap": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true
+	},
+	"exclude": [
+		"node_modules"
+	]
+}

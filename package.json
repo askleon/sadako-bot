@@ -1,0 +1,19 @@
+{
+	"name": "sadako-bot",
+	"version": "1.0.0",
+	"description": "A cursed discord bot.",
+	"main": "out/main.js",
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc -w"
+	},
+	"keywords": [],
+	"author": "Leon Ask",
+	"license": "MIT",
+	"dependencies": {
+		"@types/mongoose": "^5.5.36",
+		"@types/node": "^13.1.1",
+		"discord.js": "^11.5.1",
+		"mongoose": "^5.8.3"
+	}
+}
