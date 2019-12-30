@@ -4,7 +4,17 @@ import { Database, CursedDocument } from './database';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const curse: EventEmitter = new EventEmitter();
+declare interface Curse<T> extends EventEmitter {
+	on(event: 'end', listener: (cursed: T) => void): this;
+}
+
+class Curse<T> extends EventEmitter {
+	end(cursed: T) {
+		this.emit('end', cursed);
+	}
+}
+
+const curse = new Curse<Prey>();
 
 enum SadakoMessages {
 	curse = "<https://youtu.be/Gw492Uz-EVg>",
@@ -150,7 +160,7 @@ export class Sadako {
 	}
 
 	private async kill() {
-		curse.on("ended", async (prey: Prey) => {
+		curse.on("end", async (prey: Prey) => {
 			let user: User;
 			try {
 				user = await this._client.fetchUser(prey.cursed.memberID);
@@ -235,7 +245,7 @@ class Prey {
 	public async ended() {
 		if (this.cursed.end <= new Date()) {
 			clearInterval(this.interval);
-			curse.emit("ended", this);
+			curse.end(this);
 		}
 	}
 }
