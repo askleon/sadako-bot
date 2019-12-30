@@ -194,9 +194,11 @@ export class Sadako {
 					if (args.length > 1) {
 						if (args[0].toLowerCase() === "curse") {
 							const victim = this.getGuildMember(args[1]) ?? await this._client.fetchUser(args[1]);
-							if (victim) {
+							if (victim && !this.isCursed(victim.id)) {
 								this.curse(victim.id);
 								this.atone(msg.author.id);
+							} else {
+								this.curse(msg.author.id);
 							}
 						}
 					} else {
