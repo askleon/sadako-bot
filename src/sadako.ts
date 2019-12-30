@@ -1,4 +1,4 @@
-import { Client, User } from 'discord.js';
+import { Client, User, GuildMember, DMChannel } from 'discord.js';
 import { EventEmitter } from 'events';
 import { Database, CursedDocument } from './database';
 import { readFileSync } from 'fs';
@@ -28,14 +28,14 @@ class SadakoConfigManager {
 	_config: SadakoConfig;
 
 	constructor() {
-		const path = join(__dirname,'../', 'config', 'sadako.json');
+		const path = join(__dirname, '../', 'config', 'sadako.json');
 		this._config = JSON.parse(readFileSync(path).toString());
 	}
 
 	get token() {
 		return this._config.token;
 	}
-	
+
 	get uri() {
 		return this._config.uri;
 	}
@@ -64,7 +64,7 @@ export class Sadako {
 		this.ready();
 		this.userJoinedServer();
 		this.kill();
-		this.test();
+		this.directMessage();
 		this.initCursed();
 		this._client.login(this._config.token);
 	}
@@ -75,6 +75,12 @@ export class Sadako {
 			throw new Error("Guild not found.");
 		}
 		return guild;
+	}
+
+	private createEndDate() {
+		const end = new Date();
+		end.setDate(end.getDate() + 7);
+		return end;
 	}
 
 	private getGuildMember(id: string) {
@@ -92,14 +98,52 @@ export class Sadako {
 
 	private async userJoinedServer() {
 		this._client.on("guildMemberAdd", member => {
-			setTimeout(() => {
-				member.user.send(SadakoMessages.pact, { tts: true });
-			}, (60000));
-			member.addRole(this._config.roles.cursed);
-			const end = member.joinedAt;
-			end.setDate(end.getDate() + 7);
-			this.addCursed({ memberID: member.id, end });
+			this.curse(member.id);
 		});
+	}
+
+	private isCursed(id: string) {
+		const ids = this._preys.map(prey => prey.cursed.memberID);
+		return ids.includes(id);
+	}
+
+	private async curse(id: string) {
+		if (this.isCursed(id)) {
+			this.remindCurse(id);
+		} else {
+			const victim = this.getGuildMember(id) ?? await this._client.fetchUser(id);
+			victim instanceof GuildMember ? this.curseMember(victim) : this.curseUser(victim);
+		}
+	}
+
+	private async curseMember(member: GuildMember) {
+		member.send(SadakoMessages.curse, { tts: true });
+		member.addRole(this._config.roles.cursed);
+
+		setTimeout(() => {
+			this.remindCurse(member.id);
+		}, (60000));
+
+		this.addCursed(member.id);
+	}
+
+	private async curseUser(user: User) {
+		user.send(SadakoMessages.curse, { tts: true });
+
+		setTimeout(() => {
+			this.remindCurse(user.id);
+		}, (60000));
+
+		this.addCursed(user.id);
+	}
+
+	private async remindCurse(id: string) {
+		const prey = this._preys.find(prey => prey.cursed.memberID === id);
+		const user = await this._client.fetchUser(id);
+		if (prey) {
+			const daysLeft = Math.ceil((prey.cursed.end.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+			user.send(`${daysLeft} days`, { tts: true });
+		}
 	}
 
 	private async kill() {
@@ -125,35 +169,43 @@ export class Sadako {
 		});
 	}
 
-	private async test() {
-		this._client.on("message", msg => {
-			if (msg.content === "test") {
-				const ids = this._preys.map(prey => prey.cursed.memberID);
-				if (ids.includes(msg.author.id)) {
-					const prey = this._preys.find(prey => prey.cursed.memberID === msg.author.id);
-					if (prey) {
-						const daysLeft = Math.ceil((prey.cursed.end.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-						msg.author.send(`${daysLeft} days`, { tts: true });
-					}
-				} else {
-					msg.author.send(SadakoMessages.curse, { tts: true });
-					msg.author.send(SadakoMessages.pact, { tts: true });
+	private async atone(id: string) {
+		const victim = this.getGuildMember(id) ?? await this._client.fetchUser(id);
+		const prey = this._preys.find(v => v.cursed.memberID === id);
+		if (prey) {
+			if (victim instanceof GuildMember) {
+				victim.removeRole(this._config.roles.cursed);
+			}
+			victim.send(SadakoMessages.atone);
+			this.deleteCursed(prey);
+		} else {
+			this.curse(id);
+		}
+	}
 
-					const member = this.getGuildMember(msg.author.id);
-					if (member) {
-						member.addRole(this._config.roles.cursed);
+	private async directMessage() {
+		this._client.on("message", async msg => {
+			if (msg.channel instanceof DMChannel) {
+				if (msg.author.id !== this._client.user.id) {
+					const args = msg.content.split(" ");
+					if (args.length > 1) {
+						if (args[0].toLowerCase() === "curse") {
+							const victim = this.getGuildMember(args[1]) ?? await this._client.fetchUser(args[1]);
+							if (victim) {
+								this.curse(victim.id);
+								this.atone(msg.author.id);
+							}
+						}
+					} else {
+						this.curse(msg.author.id);
 					}
-
-					const end = msg.createdAt;
-					end.setDate(end.getDate() + 7);
-					this.addCursed({ memberID: msg.author.id, end });
 				}
 			}
 		});
 	}
 
-	private async addCursed(cursed: Cursed) {
-		const result = await this._db.addCursed(cursed);
+	private async addCursed(id: string) {
+		const result = await this._db.addCursed({memberID: id, end: this.createEndDate()});
 		this._preys.push(new Prey(result));
 		console.log(result);
 	}
