@@ -5,7 +5,8 @@
 	"main": "out/main.js",
 	"scripts": {
 		"build": "tsc",
-		"watch": "tsc -w"
+		"watch": "tsc -w",
+		"start": "node ./out/main.js"
 	},
 	"keywords": [],
 	"author": "Leon Ask",
@@ -15,5 +16,8 @@
 		"@types/node": "^13.1.1",
 		"discord.js": "^11.5.1",
 		"mongoose": "^5.8.3"
+	},
+	"devDependencies": {
+		"typescript": "^3.7.4"
 	}
 }
