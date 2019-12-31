@@ -129,7 +129,6 @@ export class Sadako {
 	}
 
 	private async curseMember(member: GuildMember) {
-		member.send(SadakoMessages.curse, { tts: true });
 		member.addRole(this._config.roles.cursed);
 		this.curseUser(member.user);
 	}
