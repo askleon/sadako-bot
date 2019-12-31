@@ -218,7 +218,6 @@ export class Sadako {
 		if (victim && !this.isCursed(victim.id)) {
 			if (victim.id === this._client.user.id) {
 				msg.react('👻');
-				return;
 			} else {
 				this.curse(victim.id);
 				this.atone(msg.author.id);
