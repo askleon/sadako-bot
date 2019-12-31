@@ -1,4 +1,4 @@
-import { Client, User, GuildMember, DMChannel } from 'discord.js';
+import { Client, User, GuildMember, DMChannel, Message } from 'discord.js';
 import { EventEmitter } from 'events';
 import { Database, CursedDocument } from './database';
 import { readFileSync } from 'fs';
@@ -194,22 +194,39 @@ export class Sadako {
 			if (msg.channel instanceof DMChannel) {
 				if (msg.author.id !== this._client.user.id) {
 					const args = msg.content.split(" ");
-					if (args.length > 1) {
-						if (args[0].toLowerCase() === "curse") {
-							const victim = this.getGuildMember(args[1]) ?? await this._client.fetchUser(args[1]);
-							if (victim && !this.isCursed(victim.id)) {
-								this.curse(victim.id);
-								this.atone(msg.author.id);
-							} else {
-								this.curse(msg.author.id);
-							}
-						}
-					} else {
-						this.curse(msg.author.id);
-					}
+					this.runCommand(args, msg);
 				}
 			}
 		});
+	}
+
+	private async runCommand(args: string[], msg: Message) {
+		switch (args[0].toLowerCase()) {
+			case "curse":
+				if (args.length > 1) {
+					this.invokeCurse(args[1], msg);
+					break;
+				}
+			default:
+				this.curse(msg.author.id);
+		}
+	}
+
+	private async invokeCurse(victimId: string, msg: Message) {
+		const victim = await this._client.fetchUser(victimId);
+
+		if (victim && !this.isCursed(victim.id)) {
+			if (victim.id === this._client.user.id) {
+				msg.react('👻');
+				return;
+			} else {
+				this.curse(victim.id);
+				this.atone(msg.author.id);
+				return;
+			}
+		}
+
+		this.curse(msg.author.id);
 	}
 
 	private async addCursed(id: string) {
